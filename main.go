@@ -8,18 +8,18 @@ import (
 	"strings"
 )
 
-var patternRE = regexp.MustCompile(`\[(\d+) ([^\]]+)\]`)
+var patternRE = regexp.MustCompile(`\[(.*?)\]`)
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Println("Error")
+		fmt.Println("Error: Please provide one argument")
 		return
 	}
 
 	encodedText := os.Args[1]
 	decodedText, err := DecodeArt(encodedText)
 	if err != nil {
-		fmt.Println("Error")
+		fmt.Println("Error:", err)
 		return
 	}
 
@@ -40,27 +40,50 @@ func DecodeArt(encoded string) (string, error) {
 	var decoded strings.Builder
 	lastEnd := 0
 	for _, match := range matches {
-		countStr := encoded[match[2]:match[3]]
-		repeatedStr := encoded[match[4]:match[5]]
-		// Check if the second argument is an empty string
-		if repeatedStr == "" {
-			return "", fmt.Errorf("second argument is an empty string")
+		// Extract the substring within the current pair of brackets
+		bracketSubstring := encoded[match[0]+1 : match[1]-1]
+
+		// Iterate over the characters in the substring to find the separator
+		var separatorIndex int
+		foundSeparator := false
+		for i, char := range bracketSubstring {
+			if char == ' ' {
+				separatorIndex = i
+				foundSeparator = true
+				break
+			}
 		}
 
-		// Check if countStr is not a number
-		count, err := strconv.Atoi(countStr)
-		if err != nil {
-			return "", fmt.Errorf("first argument is not a number")
+		if !foundSeparator {
+			return "", fmt.Errorf("space separator missing within brackets: %s", bracketSubstring)
 		}
 
-		// Check if the arguments are not separated by a space
-		if match[3] != match[4]-1 {
-			return "", fmt.Errorf("arguments are not separated by a space")
+		// Extract countStr and repeatedStr based on the separator
+		countStr := bracketSubstring[:separatorIndex]
+		repeatedStr := bracketSubstring[separatorIndex+1:]
+
+		// Check if countStr contains only digits
+		if _, err := strconv.Atoi(countStr); err != nil {
+			return "", fmt.Errorf("countStr must contain only digits")
 		}
 
 		// Append decoded string
 		decoded.WriteString(encoded[lastEnd:match[0]])
-		decoded.WriteString(strings.Repeat(repeatedStr, count))
+
+		// Convert countStr to an integer
+		count, err := strconv.Atoi(countStr)
+		if err != nil {
+			return "", fmt.Errorf("failed to convert count to integer: %w", err)
+		}
+
+		// Append repeatedStr count times
+		for i := 0; i < count; i++ {
+			decoded.WriteString(repeatedStr)
+		}
+
+		if repeatedStr == "" {
+			return "", fmt.Errorf("No second argument")
+		}
 
 		lastEnd = match[1]
 	}
