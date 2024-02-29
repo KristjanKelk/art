@@ -3,26 +3,52 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
 var patternRE = regexp.MustCompile(`\[(.*?)\]`)
+var directory = "Arts"
 
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Println("Error: Please provide one argument")
+		fmt.Println("Error: Please provide the filename or encoded text as an argument")
 		return
 	}
 
-	encodedText := os.Args[1]
-	decodedText, err := DecodeArt(encodedText)
+	arg := os.Args[1]
+
+	// If the argument is just a file name, prepend the directory name
+	if !strings.Contains(arg, "/") && !strings.Contains(arg, "\\") {
+		arg = filepath.Join(directory, arg)
+	}
+
+	// Check if the argument is an existing .txt file
+	fileInfo, err := os.Stat(arg)
+	if err == nil && !fileInfo.IsDir() && filepath.Ext(arg) == ".txt" {
+		content, err := os.ReadFile(arg)
+		if err != nil {
+			fmt.Println("Error reading file:", err)
+			return
+		}
+		encodedText := string(content)
+		decodedText, err := DecodeArt(encodedText)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+		fmt.Println(decodedText)
+		return
+	}
+
+	// If the argument is not a file, treat it as encodedText directly
+	decodedText, err := DecodeArt(arg)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
-
 	fmt.Println(decodedText)
 }
 
