@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,43 +14,70 @@ var patternRE = regexp.MustCompile(`\[(.*?)\]`)
 var directory = "Arts"
 
 func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("Error: Please provide the filename or encoded text as an argument")
+	reader := bufio.NewReader(os.Stdin)
+
+	fmt.Println("Do you want to encode or decode? (e/d)")
+	action, _ := reader.ReadString('\n')
+	action = strings.TrimSpace(action)
+
+	if action != "e" && action != "d" {
+		fmt.Println("Invalid option. Please choose 'e' for encode or 'd' for decode.")
 		return
 	}
 
-	arg := os.Args[1]
-
-	// If the argument is just a file name, prepend the directory name
-	if !strings.Contains(arg, "/") && !strings.Contains(arg, "\\") {
-		arg = filepath.Join(directory, arg)
-	}
+	fmt.Println("Enter the text art or file name:")
+	text, _ := reader.ReadString('\n')
+	text = strings.TrimSpace(text)
 
 	// Check if the argument is an existing .txt file
-	fileInfo, err := os.Stat(arg)
-	if err == nil && !fileInfo.IsDir() && filepath.Ext(arg) == ".txt" {
-		content, err := os.ReadFile(arg)
+	if filepath.Ext(text) == ".txt" {
+		text = filepath.Join(directory, text)
+		content, err := os.ReadFile(text)
 		if err != nil {
 			fmt.Println("Error reading file:", err)
 			return
 		}
-		encodedText := string(content)
-		decodedText, err := DecodeArt(encodedText)
+		text = string(content)
+	}
+
+	if action == "e" {
+		encodedText := EncodeArt(text)
+		fmt.Println("Encoded text:")
+		fmt.Println(encodedText)
+	} else if action == "d" {
+		// If the argument is just a file name, prepend the directory name
+		if !strings.Contains(text, "/") && !strings.Contains(text, "\\") {
+			text = filepath.Join(directory, text)
+		}
+
+		// Check if the argument is an existing .txt file
+		fileInfo, err := os.Stat(text)
+		if err == nil && !fileInfo.IsDir() && filepath.Ext(text) == ".txt" {
+			content, err := os.ReadFile(text)
+			if err != nil {
+				fmt.Println("Error reading file:", err)
+				return
+			}
+			encodedText := string(content)
+			decodedText, err := DecodeArt(encodedText)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			fmt.Println("Decoded text:")
+			fmt.Println(decodedText)
+			return
+		}
+
+		// If the argument is not a file, treat it as encodedText directly
+		decodedText, err := DecodeArt(text)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
 		}
+		fmt.Println("Decoded text:")
 		fmt.Println(decodedText)
-		return
 	}
-
-	// If the argument is not a file, treat it as encodedText directly
-	decodedText, err := DecodeArt(arg)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-	fmt.Println(decodedText)
 }
 
 func DecodeArt(encoded string) (string, error) {
@@ -120,4 +148,48 @@ func DecodeArt(encoded string) (string, error) {
 	}
 
 	return decoded.String(), nil
+}
+
+func EncodeArt(input string) string {
+	lines := strings.Split(input, "\n")
+	var result []string
+
+	for _, line := range lines {
+		encodedLine := ProcessPattern(line)
+		result = append(result, encodedLine)
+	}
+
+	return strings.Join(result, "\n")
+}
+
+func ProcessPattern(input string) string {
+	if len(input) == 0 {
+		return ""
+	}
+
+	var result strings.Builder
+	currentPattern := string(input[0])
+	count := 1
+
+	for i := 1; i < len(input); i++ {
+		if input[i] == currentPattern[0] {
+			count++
+		} else {
+			if count >= 5 {
+				result.WriteString(fmt.Sprintf("[%d %s]", count, currentPattern))
+			} else {
+				result.WriteString(strings.Repeat(currentPattern, count))
+			}
+			currentPattern = string(input[i])
+			count = 1
+		}
+	}
+
+	if count >= 5 {
+		result.WriteString(fmt.Sprintf("[%d %s]", count, currentPattern))
+	} else {
+		result.WriteString(strings.Repeat(currentPattern, count))
+	}
+
+	return result.String()
 }
