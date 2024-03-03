@@ -155,24 +155,24 @@ func EncodeArt(input string) string {
 	var result []string
 
 	for _, line := range lines {
-		encodedLine := ProcessPattern(line)
+		encodedLine := encodeLineWithRunLength(line)
 		result = append(result, encodedLine)
 	}
 
 	return strings.Join(result, "\n")
 }
 
-func ProcessPattern(input string) string {
-	if len(input) == 0 {
+func encodeLineWithRunLength(line string) string {
+	if len(line) == 0 {
 		return ""
 	}
 
 	var result strings.Builder
-	currentPattern := string(input[0])
+	currentPattern := string(line[0])
 	count := 1
 
-	for i := 1; i < len(input); i++ {
-		if input[i] == currentPattern[0] {
+	for i := 1; i < len(line); i++ {
+		if line[i] == currentPattern[0] {
 			count++
 		} else {
 			if count >= 5 {
@@ -180,11 +180,12 @@ func ProcessPattern(input string) string {
 			} else {
 				result.WriteString(strings.Repeat(currentPattern, count))
 			}
-			currentPattern = string(input[i])
+			currentPattern = string(line[i])
 			count = 1
 		}
 	}
 
+	// Append the last pattern after the loop
 	if count >= 5 {
 		result.WriteString(fmt.Sprintf("[%d %s]", count, currentPattern))
 	} else {
