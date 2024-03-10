@@ -151,46 +151,42 @@ func DecodeArt(encoded string) (string, error) {
 }
 
 func EncodeArt(input string) string {
-	lines := strings.Split(input, "\n")
-	var result []string
+	var resultArray []string
+	length := len(input)
 
-	for _, line := range lines {
-		encodedLine := encodeLineWithRunLength(line)
-		result = append(result, encodedLine)
-	}
-
-	return strings.Join(result, "\n")
-}
-
-func encodeLineWithRunLength(line string) string {
-	if len(line) == 0 {
-		return ""
-	}
-
-	var result strings.Builder
-	currentPattern := string(line[0])
-	count := 1
-
-	for i := 1; i < len(line); i++ {
-		if line[i] == currentPattern[0] {
-			count++
+	// Splitting the input to slice/array for reworking into encoded version later.
+	for i := 0; i < length; i++ {
+		if i+1 < length && input[i] == input[i+1] {
+			resultArray = append(resultArray, string(input[i]))
+		} else if i+2 < length && input[i] == input[i+2] ||
+			len(resultArray) > 0 && len(resultArray[len(resultArray)-1]) != 1 &&
+				input[i:i+2] == resultArray[len(resultArray)-1] {
+			resultArray = append(resultArray, input[i:i+2])
+			i++
 		} else {
-			if count >= 5 {
-				result.WriteString(fmt.Sprintf("[%d %s]", count, currentPattern))
-			} else {
-				result.WriteString(strings.Repeat(currentPattern, count))
-			}
-			currentPattern = string(line[i])
-			count = 1
+			resultArray = append(resultArray, string(input[i]))
 		}
 	}
 
-	// Append the last pattern after the loop
-	if count >= 5 {
-		result.WriteString(fmt.Sprintf("[%d %s]", count, currentPattern))
-	} else {
-		result.WriteString(strings.Repeat(currentPattern, count))
+	// Constructing result string from the array by counting consecutive elements
+	// and encoding if there are at least 5 consecutive elements
+	var result string
+	var count int
+	i := 0
+	length = len(resultArray)
+	for i < len(resultArray) {
+		if i+1 < length && resultArray[i] == resultArray[i+1] {
+			count++
+		} else {
+			if count >= 4 {
+				result += fmt.Sprintf(`[%d %s]`, count+1, resultArray[i])
+				count = 0
+			} else {
+				result += resultArray[i]
+				count = 0 // Reset count
+			}
+		}
+		i++
 	}
-
-	return result.String()
+	return result
 }
