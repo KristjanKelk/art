@@ -27,10 +27,11 @@ func main() {
 
 	fmt.Println("Enter the text art or file name:")
 	text, _ := reader.ReadString('\n')
-	text = strings.TrimSpace(text)
+	//text = strings.TrimSpace(text)
 
 	// Check if the argument is an existing .txt file
 	if filepath.Ext(text) == ".txt" {
+		text = strings.TrimSpace(text)
 		text = filepath.Join(directory, text)
 		content, err := os.ReadFile(text)
 		if err != nil {
@@ -150,43 +151,44 @@ func DecodeArt(encoded string) (string, error) {
 	return decoded.String(), nil
 }
 
-func EncodeArt(input string) string {
-	var resultArray []string
-	length := len(input)
+func EncodeArt(text string) string {
 
-	// Splitting the input to slice/array for reworking into encoded version later.
-	for i := 0; i < length; i++ {
-		if i+1 < length && input[i] == input[i+1] {
-			resultArray = append(resultArray, string(input[i]))
-		} else if i+2 < length && input[i] == input[i+2] ||
-			len(resultArray) > 0 && len(resultArray[len(resultArray)-1]) != 1 &&
-				input[i:i+2] == resultArray[len(resultArray)-1] {
-			resultArray = append(resultArray, input[i:i+2])
-			i++
-		} else {
-			resultArray = append(resultArray, string(input[i]))
-		}
-	}
+	var output strings.Builder
+	count := 0
+	currentPattern := ""
 
-	// Constructing result string from the array by counting consecutive elements
-	// and encoding if there are at least 5 consecutive elements
-	var result string
-	var count int
-	i := 0
-	length = len(resultArray)
-	for i < len(resultArray) {
-		if i+1 < length && resultArray[i] == resultArray[i+1] {
+	for i := 0; i < len(text); i++ {
+		if i < len(text)-1 && text[i] == text[i+1] {
+			currentPattern = string(text[i])
 			count++
+			continue
 		} else {
-			if count >= 4 {
-				result += fmt.Sprintf(`[%d %s]`, count+1, resultArray[i])
-				count = 0
-			} else {
-				result += resultArray[i]
-				count = 0 // Reset count
+			if len(currentPattern) != 1 && i < len(text)-3 && text[i:i+2] == text[i+2:i+4] {
+				currentPattern = text[i : i+2]
+				count++
+				i++
+				continue
 			}
 		}
-		i++
+
+		if count > 0 {
+			if count >= 2 {
+				fmt.Fprintf(&output, "[%d %s]", count+1, string(currentPattern))
+			} else {
+				fmt.Fprint(&output, RepeatString(count+1, string(currentPattern)))
+			}
+			count = 0
+			if len(currentPattern) == 2 {
+				i++
+			}
+			currentPattern = ""
+		} else {
+			fmt.Fprint(&output, string(text[i]))
+		}
 	}
-	return result
+	return output.String()
+}
+
+func RepeatString(n int, text string) string {
+	return strings.Repeat(text, n)
 }
