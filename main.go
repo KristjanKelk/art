@@ -27,7 +27,7 @@ func main() {
 
 	fmt.Println("Enter the text art or file name:")
 	text, _ := reader.ReadString('\n')
-	//text = strings.TrimSpace(text)
+	text = strings.TrimSpace(text)
 
 	// Check if the argument is an existing .txt file
 	if filepath.Ext(text) == ".txt" {
@@ -175,7 +175,7 @@ func EncodeArt(text string) string {
 			if count >= 2 {
 				fmt.Fprintf(&output, "[%d %s]", count+1, string(currentPattern))
 			} else {
-				fmt.Fprint(&output, RepeatString(count+1, string(currentPattern)))
+				fmt.Fprint(&output, strings.Repeat(string(currentPattern), count+1))
 			}
 			count = 0
 			if len(currentPattern) == 2 {
@@ -187,8 +187,4 @@ func EncodeArt(text string) string {
 		}
 	}
 	return output.String()
-}
-
-func RepeatString(n int, text string) string {
-	return strings.Repeat(text, n)
 }
