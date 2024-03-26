@@ -21,10 +21,19 @@ func main() {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		action := getActionFromUser(reader)
-		if action == "" {
-			continue
+		action := runOnServerOrTerminal(reader)
+		if action == "t" {
+			action := getActionFromUser(reader)
+			if action == "" {
+				continue
+			}
+		if action == "s" {
+			startServer()
+		}	
 		}
+
+
+
 
 		inputType := getInputTypeFromUser(reader)
 		if inputType == "" {
