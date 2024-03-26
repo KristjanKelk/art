@@ -8,6 +8,19 @@ import (
 	"strings"
 )
 
+func runOnServerOrTerminal(reader *bufio.Reader) string {
+	for {
+		fmt.Println("Do you want to run it on terminal or server? (t/s)")
+		action, _ := reader.ReadString('\n')
+		action = strings.TrimSpace(action)
+
+		if action == "t" || action == "s" {
+			return action
+		}
+		fmt.Printf("%sInvalid option. Please choose 't' for terminal or 's' for server.%s\n", colorRed, colorReset)
+	}
+}
+
 func getActionFromUser(reader *bufio.Reader) string {
 	for {
 		fmt.Println("Do you want to encode or decode? (e/d)")
