@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -22,43 +23,62 @@ func main() {
 
 	for {
 		action := runOnServerOrTerminal(reader)
-		if action == "t" {
-			action := getActionFromUser(reader)
-			if action == "" {
-				continue
-			}
-		if action == "s" {
+		switch action {
+		case "t":
+			handleTerminal(reader)
+		case "s":
 			startServer()
-		}	
+		default:
+			fmt.Println("Invalid action. Please choose 't' for terminal or 's' for server.")
 		}
+	}
+}
 
+func handleTerminal(reader *bufio.Reader) {
+	action := getActionFromUser(reader)
+	if action == "" {
+		return
+	}
 
+	inputType := getInputTypeFromUser(reader)
+	if inputType == "" {
+		return
+	}
 
+	text := getTextArtFromUser(reader, inputType)
+	if text == "" {
+		return
+	}
 
-		inputType := getInputTypeFromUser(reader)
-		if inputType == "" {
+	if filepath.Ext(strings.TrimSpace(text)) == ".txt" {
+		text = handleTextFile(text)
+	} else {
+		// Handle other input types if needed
+	}
+
+	switch action {
+	case "e":
+		encodeText(text)
+	case "d":
+		decodeText(text)
+	default:
+		fmt.Println("Invalid action. Please choose 'e' for encode or 'd' for decode.")
+	}
+
+	if !continueOperation(reader) {
+		os.Exit(0) // Exit the program if the user chooses not to continue
+	}
+}
+
+func runOnServerOrTerminal(reader *bufio.Reader) string {
+	fmt.Println("Do you want to run on a server or in a terminal? (s/t)")
+	for {
+		action, _ := reader.ReadString('\n')
+		action = strings.TrimSpace(action)
+		if action != "s" && action != "t" {
+			fmt.Println("Invalid option. Please choose 's' for server or 't' for terminal.")
 			continue
 		}
-
-		text := getTextArtFromUser(reader, inputType)
-		if text == "" {
-			continue
-		}
-
-		if filepath.Ext(strings.TrimSpace(text)) == ".txt" {
-			text = handleTextFile(text)
-		} else {
-			//text = strings.TrimSpace(text)
-		}
-
-		if action == "e" {
-			encodeText(text)
-		} else if action == "d" {
-			decodeText(text)
-		}
-
-		if !continueOperation(reader) {
-			break
-		}
+		return action
 	}
 }
