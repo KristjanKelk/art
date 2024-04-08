@@ -47,46 +47,49 @@
             background-color: #45a049;
         }
 
-        .output-textarea {
-            width: 100%;
-            height: 150px; /* Adjust height as needed */
-            padding: 10px;
-            margin-top: 20px;
-            font-size: 16px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            box-sizing: border-box;
-            resize: vertical; /* Allow vertical resizing */
-        }
+        .output {
+    margin-top: 20px;
+    font-size: 18px;
+    font-family: monospace; /* Use monospace font for better text alignment */
+    white-space: pre-wrap; /* Preserve newlines and spaces */
+    text-align: left; /* Align text to the left */
+}
     </style>
 </head>
 
 <body>
     <div class="container">
         <h2>Text Art Decoder</h2>
-        <textarea id="encodedText" placeholder="Enter encoded text"></textarea>
+        <textarea id="textInput" placeholder="Enter encoded text"></textarea>
+        <div>
+            <input type="radio" id="encodeRadio" name="action" value="encode" checked>
+            <label for="encodeRadio">Encode</label>
+            <input type="radio" id="decodeRadio" name="action" value="decode">
+            <label for="decodeRadio">Decode</label>
+        </div>
         <button onclick="generate()">Generate</button>
-        <textarea class="output-textarea" id="decodedText" readonly></textarea>
+        <div class="output" id="outputText"></div>
     </div>
 
     <script>
         function generate() {
-            var encodedText = document.getElementById("encodedText").value;
-            // Encode newline characters
-            encodedText = encodeURIComponent(encodedText).replace(/%0A/g, '\n');
+            var textInput = document.getElementById("textInput").value;
+            var action = document.querySelector('input[name="action"]:checked').value;
+
             var xhr = new XMLHttpRequest();
-            xhr.open("POST", "/decoder", true);
+            xhr.open("POST", "/action", true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
             xhr.onreadystatechange = function () {
                 if (xhr.readyState == 4) {
                     if (xhr.status == 200) {
-                        document.getElementById("decodedText").value = xhr.responseText;
+                        var decodedText = xhr.responseText;
+                        document.getElementById("outputText").innerText = decodedText;
                     } else {
-                        document.getElementById("decodedText").value = "Error: " + xhr.statusText;
+                        document.getElementById("outputText").innerText = "Error: " + xhr.statusText;
                     }
                 }
             };
-            xhr.send("text=" + encodedText);
+            xhr.send("text=" + encodeURIComponent(textInput) + "&action=" + action);
         }
     </script>
 </body>

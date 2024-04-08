@@ -12,8 +12,8 @@ type PageData struct {
 }
 
 func startServer() {
-	// Set up your HTTP endpoints
 	http.HandleFunc("/", serveMainPage)
+	http.HandleFunc("/action", handleAction)
 	http.HandleFunc("/decoder", handleDecoder)
 
 	// Start the server on port 8080
@@ -58,10 +58,38 @@ func handleDecoder(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Respond with the decoded text
-		fmt.Fprintf(w, "Decoded Text: %s", decodedText)
+		fmt.Fprintf(w, decodedText)
 	} else if r.Method == "GET" {
 		// Serve a page with the last decoded string
 		// You would need to implement storage and retrieval of the last decoded string
+	} else {
+		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
+	}
+}
+
+func handleAction(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		r.ParseForm()
+		text := r.FormValue("text")
+		action := r.FormValue("action")
+
+		var result string
+		var err error
+
+		if action == "encode" {
+			result = EncodeArt(text)
+		} else if action == "decode" {
+			result, err = DecodeArt(text)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+		} else {
+			http.Error(w, "Invalid action", http.StatusBadRequest)
+			return
+		}
+
+		fmt.Fprintf(w, result)
 	} else {
 		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
 	}
