@@ -12,12 +12,18 @@ type PageData struct {
 }
 
 func startServer() {
+
+	// Serve static files with correct MIME types
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static", fs))
+
+	// Register your route handlers for the server
 	http.HandleFunc("/", serveMainPage)
 	http.HandleFunc("/action", handleAction)
 	http.HandleFunc("/decoder", handleDecoder)
 
 	// Start the server on port 8080
-	fmt.Println("Starting server at port 8080")
+	log.Print("Starting server at port 8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
@@ -30,7 +36,7 @@ func serveMainPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Load the main page template
-	tmpl, err := template.ParseFiles("index.html")
+	tmpl, err := template.ParseFiles("static/index.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
