@@ -1,6 +1,10 @@
+:root {
+  --art-color: #63d6b6; 
+}
+
 body {
   font-family: Arial, sans-serif;
-  background: linear-gradient(to right, #3f87a6, #ebf8e1);
+  background: linear-gradient(to right, #3f97a6, #ebf8e1);
   margin: 0;
   padding: 0;
   display: flex;
@@ -19,7 +23,7 @@ body {
 }
 
 h2 {
-  color: #63d6b6;
+  color: var(--art-color);
   
 }
 
@@ -27,6 +31,13 @@ h2 {
   text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
 }
 
+label {
+  color: black; 
+}
+
+input[type="radio"] {
+  opacity: 0.5;
+}
 
 textarea {
   width: 100%;
@@ -45,7 +56,7 @@ textarea {
 button {
   padding: 10px 20px;
   font-size: 16px;
-  background-color: #63d6b6;
+  background-color: var(--art-color);
   color: black;
   border: none;
   border-radius: 5px;

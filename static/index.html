@@ -45,7 +45,6 @@ function generate() {
                 var decodedText = xhr.responseText;
                 document.getElementById("outputText").innerText = decodedText;
 
-                // Show the Copy button if output is generated
                 const copyButton = document.getElementById("copyButton");
                 if (decodedText.trim()) { 
                   copyButton.style.display = "block";
