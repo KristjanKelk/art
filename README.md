@@ -20,24 +20,21 @@ This Go program provides functionality to encode and decode text art, allowing u
 
 4. Run the program:
   ./art
-
-5. Follow the prompts to choose between encoding or decoding, specify the input type (multiple lines or single line), and provide the text art to encode or decode.
+5. Choose to run the program on commandline(b) or start server and use it with webbrowser(a)(http://localhost:8080/)
+a. You can toggle between encode or decode and write input into textarea. 
+b. Follow the prompts to choose between encoding or decoding, specify the input type (multiple lines or single line), and provide the text art to encode or decode.
 
 ## Examples
 1. 
-Do you want to encode or decode? (e/d): e
-Do you want to enter multiple lines or a single line? (m/s): m
-Enter the text art (press Ctrl+D to finish):
-[3 A]
-[4 I]
-Ctrl + D
-Encoded text:
-AAA
-IIII
-Do you want to encode or decode another text? (y/n)
-n
+Do you want to run on a server or in a terminal? (s/t) : s
+Open your browser and type http://localhost:8080/
+Choose to encode or decode and paste your text into textarea and answer will be shown after you press generate button.
+To close server press ctrl + c in terminal/commandline where you started server.
+
+
 
 2. 
+Do you want to run on a server or in a terminal? (s/t) : t
 Do you want to encode or decode? (e/d): d
 Do you want to enter multiple lines or a single line? (m/s): s
 Enter the text art or filename:

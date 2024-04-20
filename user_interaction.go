@@ -96,3 +96,16 @@ func continueOperation(reader *bufio.Reader) bool {
 		return choice == "y"
 	}
 }
+
+func runOnServerOrTerminal(reader *bufio.Reader) string {
+	fmt.Println("Do you want to run on a server or in a terminal? (s/t)")
+	for {
+		action, _ := reader.ReadString('\n')
+		action = strings.TrimSpace(action)
+		if action != "s" && action != "t" {
+			fmt.Println("Invalid option. Please choose 's' for server or 't' for terminal.")
+			continue
+		}
+		return action
+	}
+}

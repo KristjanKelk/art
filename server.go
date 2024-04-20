@@ -67,7 +67,6 @@ func handleDecoder(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, decodedText)
 	} else if r.Method == "GET" {
 		// Serve a page with the last decoded string
-		// You would need to implement storage and retrieval of the last decoded string
 	} else {
 		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
 	}
