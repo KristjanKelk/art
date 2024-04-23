@@ -87,11 +87,14 @@ button:hover {
 
 #copyButton {
   display: none;
+  transition: opacity 1s ease-out;
 
 }
 
 .button-container {    
   align-items: center;   
+  height: 50px;
+  display: inline-block;
 }
 
 

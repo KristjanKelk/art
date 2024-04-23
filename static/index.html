@@ -43,36 +43,52 @@ function generate() {
         if (xhr.readyState == 4) {
             if (xhr.status == 200) {
                 var decodedText = xhr.responseText;
-                document.getElementById("outputText").innerText = decodedText;
+                document.getElementById("outputText").textContent = decodedText;
+                document.getElementById("outputText").classList.remove("error");
 
                 const copyButton = document.getElementById("copyButton");
                 if (decodedText.trim()) { 
                   copyButton.style.display = "block";
-                } 
+                  copyButton.style.opacity = 1;
+                  copyButton.textContent = "Copy";
+                } else {
+                        copyButton.style.display = "none";
+                        }
 
             } else {
-                document.getElementById("outputText").innerText = "Malformed input error: " + xhr.statusText;
+                document.getElementById("outputText").textContent = "Malformed input error: " + xhr.responseText;
+                document.getElementById("outputText").classList.add("error");
+                document.getElementById("copyButton").style.display = "none";
             }
         }
     };
     xhr.send("text=" + encodeURIComponent(textInput) + "&action=" + action);
+
+    window.addEventListener('copy', (event) => {
+  // If anything is copied, show the button again in case it was hidden
+  document.getElementById("copyButton").style.display = 'block';   
+}); 
 }
 
 function copyOutput() {
   const outputText = document.getElementById("outputText");
-  const copyButton = document.getElementById("copyButton"); 
+  const copyButton = document.getElementById("copyButton");
 
   if (outputText.textContent) { 
     navigator.clipboard.writeText(outputText.textContent)
-      .then(() => {
-        console.log('Output copied to clipboard');
+        .then(() => {
+            console.log('Output copied to clipboard');
 
-        copyButton.textContent = "Copied!"; 
-        setTimeout(() => {
-          copyButton.textContent = "Copy";
-        }, 10000); 
+            copyButton.textContent = "Copied!"; 
 
-      })
+            // Smooth fade-out after a delay
+            setTimeout(() => {
+                copyButton.style.transition = "opacity 1s ease-out"; // Add transition
+                copyButton.style.opacity = 0; // Set opacity to 0 for fade-out
+
+            }, 1000); // 1-second delay before fade-out starts
+
+        })
       .catch(err => {
         console.error('Could not copy text: ', err);
       });
