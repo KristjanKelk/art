@@ -20,7 +20,7 @@ func EncodeArt(text string) string {
 			if len(currentPattern) != 1 && i < len(text)-3 && text[i:i+2] == text[i+2:i+4] {
 				currentPattern = text[i : i+2]
 				count++
-				i++ // Skip the next character since it's part of the pattern.
+				i++
 				continue
 			}
 		}

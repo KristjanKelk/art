@@ -32,43 +32,61 @@
     </div>
 
     <script>
+
 function generate() {
-    var textInput = document.getElementById("textInput").value;
-    var action = document.querySelector('input[name="action"]:checked').value;
+  const textInput = document.getElementById("textInput").value;
+  const action = document.querySelector('input[name="action"]:checked').value;
+  let endpoint = "/action"; // Default to the action endpoint
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/action", true);
-    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    xhr.onreadystatechange = function () {
-        if (xhr.readyState == 4) {
-            if (xhr.status == 200) {
-                var decodedText = xhr.responseText;
-                document.getElementById("outputText").textContent = decodedText;
-                document.getElementById("outputText").classList.remove("error");
+  if (action === "decode") {
+    endpoint = "/decoder"; 
+    history.pushState({}, "", endpoint); // Update the URL for decoder
+  } else if (action === "encode") {
+    endpoint = "/encoder"; 
+    history.pushState({}, "", endpoint); // Update the URL for encoder
+  } 
 
-                const copyButton = document.getElementById("copyButton");
-                if (decodedText.trim()) { 
-                  copyButton.style.display = "block";
-                  copyButton.style.opacity = 1;
-                  copyButton.textContent = "Copy";
-                } else {
-                        copyButton.style.display = "none";
-                        }
+  const xhr = new XMLHttpRequest();
+  xhr.open("POST", endpoint, true);
+  xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-            } else {
-                document.getElementById("outputText").textContent = "Malformed input error: " + xhr.responseText;
-                document.getElementById("outputText").classList.add("error");
-                document.getElementById("copyButton").style.display = "none";
-            }
+  let outputUpdated = false; // Flag to prevent double updates
+
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState == 4) {
+      if (xhr.status == 200 || xhr.status == 202) {
+        console.log("Response received:", xhr.responseText); 
+        
+        if (!outputUpdated) { // Only update if not updated before
+          const decodedText = xhr.responseText;
+          document.getElementById("outputText").textContent = decodedText;
+          console.log("outputText updated");
+          document.getElementById("outputText").classList.remove("error");
+          outputUpdated = true; // Set the flag
         }
-    };
-    xhr.send("text=" + encodeURIComponent(textInput) + "&action=" + action);
 
-    window.addEventListener('copy', (event) => {
-  // If anything is copied, show the button again in case it was hidden
-  document.getElementById("copyButton").style.display = 'block';   
-}); 
+        const copyButton = document.getElementById("copyButton");
+      } else { 
+ // If there's output, show the button, reset opacity
+ if (decodedText.trim()) {
+   copyButton.style.display = "block"; 
+   copyButton.style.opacity = 1;
+   copyButton.textContent = "Copy"; 
+ } else {
+   copyButton.style.display = "none";
+ }
+      }
+    }
+  };
+
+  xhr.send("text=" + encodeURIComponent(textInput) + "&action=" + action);
+
+  // Clipboard Event Listener (for copy button visibility):
+  window.addEventListener('copy', (event) => {
+    document.getElementById("copyButton").style.display = 'block';   
+  }); 
 }
+
 
 function copyOutput() {
   const outputText = document.getElementById("outputText");

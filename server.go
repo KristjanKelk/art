@@ -19,8 +19,8 @@ func startServer() {
 
 	// Register your route handlers for the server
 	http.HandleFunc("/", serveMainPage)
-	http.HandleFunc("/action", handleAction)
-	http.HandleFunc("/decoder", handleDecoder)
+	http.HandleFunc("/encoder", handleAction)
+	http.HandleFunc("/decoder", handleAction)
 
 	// Start the server on port 8080
 	log.Print("Starting server at port 8080")
@@ -50,52 +50,47 @@ func serveMainPage(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func handleDecoder(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		// Process the form data
-		r.ParseForm()
-		encodedText := r.FormValue("text")
-
-		decodedText, err := DecodeArt(encodedText)
-		if err != nil {
-			// Handle the error
-			fmt.Printf("Error decoding text: %s\n", err)
-			return
-		}
-
-		// Respond with the decoded text
-		fmt.Fprintf(w, decodedText)
-	} else if r.Method == "GET" {
-		// Serve a page with the last decoded string
-	} else {
-		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
-	}
-}
-
 func handleAction(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "POST" {
-		r.ParseForm()
-		text := r.FormValue("text")
-		action := r.FormValue("action")
+	if r.Method != "POST" {
+		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
+		return
+	}
 
-		var result string
-		var err error
+	r.ParseForm()
+	text := r.FormValue("text")
+	action := r.FormValue("action")
 
-		if action == "encode" {
-			result = EncodeArt(text)
-		} else if action == "decode" {
-			result, err = DecodeArt(text)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-		} else {
-			http.Error(w, "Invalid action", http.StatusBadRequest)
+	var result string
+	var err error
+	var readyToSendResult bool // For sending the result in the response
+
+	switch action {
+	case "encode":
+		log.Printf("Received text to encode: %s", text)
+		result = EncodeArt(text) // Replace with your actual encoding function
+		readyToSendResult = true // Assuming EncodeArt is synchronous
+		log.Printf("Encoded text:  %s", result)
+
+	case "decode":
+		log.Printf("Received text to decode: %s", text)
+		result, err = DecodeArt(text) // Replace with your actual decoding function
+		readyToSendResult = true      // Assuming DecodeArt is synchronous
+		if err != nil {
+			log.Printf("Error decoding text: %s\n", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
+		log.Printf("Decoded text:  %s", result)
 
+	default:
+		http.Error(w, "Invalid action", http.StatusBadRequest)
+		return
+	}
+
+	if readyToSendResult {
+		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprintf(w, result)
 	} else {
-		http.Error(w, "Invalid request method.", http.StatusMethodNotAllowed)
+		w.WriteHeader(http.StatusAccepted) // Send 202 without the result initially
 	}
 }
