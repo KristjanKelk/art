@@ -62,19 +62,19 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 
 	var result string
 	var err error
-	var readyToSendResult bool // For sending the result in the response
+	var readyToSendResult bool
 
 	switch action {
 	case "encode":
 		log.Printf("Received text to encode: %s", text)
-		result = EncodeArt(text) // Replace with your actual encoding function
-		readyToSendResult = true // Assuming EncodeArt is synchronous
+		result = EncodeArt(text)
+		readyToSendResult = true
 		log.Printf("Encoded text:  %s", result)
 
 	case "decode":
 		log.Printf("Received text to decode: %s", text)
-		result, err = DecodeArt(text) // Replace with your actual decoding function
-		readyToSendResult = true      // Assuming DecodeArt is synchronous
+		result, err = DecodeArt(text)
+		readyToSendResult = true
 		if err != nil {
 			log.Printf("Error decoding text: %s\n", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -91,6 +91,6 @@ func handleAction(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 		fmt.Fprintf(w, result)
 	} else {
-		w.WriteHeader(http.StatusAccepted) // Send 202 without the result initially
+		w.WriteHeader(http.StatusAccepted)
 	}
 }

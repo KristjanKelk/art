@@ -23,12 +23,7 @@
         </div>
         
         <div class="output" id="outputText"></div>
-        <div class="button-container">
-          <button id="copyButton" onclick="copyOutput()">Copy</button>
-        </div>
         
-
-
     </div>
 
     <script>
@@ -36,84 +31,42 @@
 function generate() {
   const textInput = document.getElementById("textInput").value;
   const action = document.querySelector('input[name="action"]:checked').value;
-  let endpoint = "/action"; // Default to the action endpoint
+  let endpoint = "/action"; 
 
   if (action === "decode") {
     endpoint = "/decoder"; 
-    history.pushState({}, "", endpoint); // Update the URL for decoder
+    history.pushState({}, "", endpoint);
   } else if (action === "encode") {
     endpoint = "/encoder"; 
-    history.pushState({}, "", endpoint); // Update the URL for encoder
+    history.pushState({}, "", endpoint);
   } 
 
   const xhr = new XMLHttpRequest();
   xhr.open("POST", endpoint, true);
   xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-  let outputUpdated = false; // Flag to prevent double updates
+  let outputUpdated = false;
 
   xhr.onreadystatechange = function() {
     if (xhr.readyState == 4) {
       if (xhr.status == 200 || xhr.status == 202) {
         console.log("Response received:", xhr.responseText); 
         
-        if (!outputUpdated) { // Only update if not updated before
+        if (!outputUpdated) {
           const decodedText = xhr.responseText;
           document.getElementById("outputText").textContent = decodedText;
           console.log("outputText updated");
           document.getElementById("outputText").classList.remove("error");
-          outputUpdated = true; // Set the flag
-        }
-
-        const copyButton = document.getElementById("copyButton");
-      } else { 
- // If there's output, show the button, reset opacity
- if (decodedText.trim()) {
-   copyButton.style.display = "block"; 
-   copyButton.style.opacity = 1;
-   copyButton.textContent = "Copy"; 
- } else {
-   copyButton.style.display = "none";
- }
+          outputUpdated = true;
+        };
       }
     }
   };
 
   xhr.send("text=" + encodeURIComponent(textInput) + "&action=" + action);
-
-  // Clipboard Event Listener (for copy button visibility):
-  window.addEventListener('copy', (event) => {
-    document.getElementById("copyButton").style.display = 'block';   
-  }); 
 }
 
 
-function copyOutput() {
-  const outputText = document.getElementById("outputText");
-  const copyButton = document.getElementById("copyButton");
-
-  if (outputText.textContent) { 
-    navigator.clipboard.writeText(outputText.textContent)
-        .then(() => {
-            console.log('Output copied to clipboard');
-
-            copyButton.textContent = "Copied!"; 
-
-            // Smooth fade-out after a delay
-            setTimeout(() => {
-                copyButton.style.transition = "opacity 1s ease-out"; // Add transition
-                copyButton.style.opacity = 0; // Set opacity to 0 for fade-out
-
-            }, 1000); // 1-second delay before fade-out starts
-
-        })
-      .catch(err => {
-        console.error('Could not copy text: ', err);
-      });
-  } else {
-    console.log('No output to copy'); 
-  }
-}
     </script>
 </body>
 
