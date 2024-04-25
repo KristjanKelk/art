@@ -10,7 +10,7 @@ This Go program provides functionality to encode and decode text art, allowing u
 ## Usage
 
 1. Clone the repository:
-      git clone https://github.com/your-username/text-art-encoder-decoder.git
+      git clone https://github.com/kristjankelk/text-art-encoder-decoder.git
 
 2. Navigate to the project directory:
       cd art
